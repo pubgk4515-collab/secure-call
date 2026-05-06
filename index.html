@@ -802,32 +802,33 @@
 
 
                 supabaseChannel
-                    .on('broadcast', { event: 'offer' }, async (msg) => {
-                        console.log('📩 Offer received, polite:', isPolitePeer);
+                                        .on('broadcast', { event: 'offer' }, async (msg) => {
+                        console.log('📩 Offer received');
                         if (!peerConnection) peerConnection = createPeerConnection();
                         try {
-                            // FIX: msg.payload.sdp use kiya gaya hai
                             await peerConnection.setRemoteDescription(new RTCSessionDescription(msg.payload.sdp));
                             
                             while (iceCandidateBuffer.length) {
                                 const candidate = iceCandidateBuffer.shift();
                                 await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
                             }
-                            if (isPolitePeer) {
-                                const answer = await peerConnection.createAnswer();
-                                await peerConnection.setLocalDescription(answer);
-                                supabaseChannel.send({
-                                    type: 'broadcast',
-                                    event: 'answer',
-                                    payload: { sdp: peerConnection.localDescription }
-                                });
-                            }
+                            
+                            // FIX: Yahan se if(isPolitePeer) hata diya hai. Ab hamesha answer bhejega.
+                            const answer = await peerConnection.createAnswer();
+                            await peerConnection.setLocalDescription(answer);
+                            supabaseChannel.send({
+                                type: 'broadcast',
+                                event: 'answer',
+                                payload: { sdp: peerConnection.localDescription }
+                            });
+                            
                             setStatus('Negotiating…');
                         } catch (err) {
                             console.error('Offer handling error:', err);
                             setStatus('Err: ' + err.message, true);
                         }
                     })
+
                     .on('broadcast', { event: 'answer' }, async (msg) => {
                         console.log('📩 Answer received');
                         if (!peerConnection) return;
