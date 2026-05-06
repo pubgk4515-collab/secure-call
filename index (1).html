@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <title>SecureCall • E2EE Video</title>
+    <style>
+        /* ══════════════════════════════════════════════════════
+           🎨 CENTRALIZED CSS VARIABLE SYSTEM
+           Change these to instantly flip mood (dark <-> soft)
+           ══════════════════════════════════════════════════════ */
+        :root {
+            --bg-base: #0a0c14;
+            --bg-gradient-1: #0d111f;
+            --bg-gradient-2: #0f1729;
+            --bg-orb-1: #1a4a6e;
+            --bg-orb-2: #0e2a3f;
+            --bg-orb-3: #162d4a;
+            --accent: #4dc9f6;
+            --accent-glow: rgba(77, 201, 246, 0.55);
+            --accent-soft: rgba(77, 201, 246, 0.18);
+            --accent-ring: rgba(77, 201, 246, 0.5);
+            --glass-bg: rgba(18, 22, 36, 0.55);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-blur: 28px;
+            --text-1: #f0f3f8;
+            --text-2: #a0aec0;
+            --text-3: #6b7d95;
+            --surface-btn: rgba(28, 34, 52, 0.7);
+            --surface-btn-hover: rgba(36, 44, 64, 0.8);
+            --btn-icon: #e2e8f0;
+            --btn-muted-bg: rgba(40, 46, 62, 0.75);
+            --danger: #ef4444;
+            --danger-glow: rgba(239, 68, 68, 0.6);
+            --danger-pressed: #dc2626;
+            --e2ee-green: #22c55e;
+            --e2ee-green-glow: rgba(34, 197, 94, 0.5);
+            --status-dot: #22c55e;
+            --radius-sm: 14px;
+            --radius-md: 22px;
+            --radius-lg: 40px;
+            --transition-fast: 180ms cubic-bezier(0.22, 0.61, 0.36, 1);
+            --transition-bounce: 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        [data-theme="soft"] {
+            --bg-base: #1a1018;
+            --bg-gradient-1: #221820;
+            --bg-gradient-2: #2b1a24;
+            --bg-orb-1: #6b3a4a;
+            --bg-orb-2: #4a2a38;
+            --bg-orb-3: #5c3242;
+            --accent: #f0a58c;
+            --accent-glow: rgba(240, 165, 140, 0.5);
+            --accent-soft: rgba(240, 165, 140, 0.15);
+            --accent-ring: rgba(240, 165, 140, 0.45);
+            --glass-bg: rgba(38, 24, 32, 0.55);
+            --glass-border: rgba(255, 255, 255, 0.06);
+            --text-1: #faf5f2;
+            --text-2: #c4b5ad;
+            --text-3: #8c7b74;
+            --surface-btn: rgba(46, 30, 38, 0.7);
+            --surface-btn-hover: rgba(56, 38, 48, 0.8);
+            --btn-icon: #f5e8e2;
+            --btn-muted-bg: rgba(52, 36, 44, 0.75);
+            --danger: #e0555a;
+            --danger-glow: rgba(224, 85, 90, 0.55);
+            --danger-pressed: #c03940;
+            --e2ee-green: #7ecb8a;
+            --e2ee-green-glow: rgba(126, 203, 138, 0.45);
+            --status-dot: #f0a58c;
+        }
+
+        /* ══════════════════════════════════════════════════════
+           RESET & BASE
+           ══════════════════════════════════════════════════════ */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        html {
+            height: 100%;
+            -webkit-tap-highlight-color: transparent;
+            overflow: hidden;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            height: 100%;
+            height: 100dvh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-base);
+            overflow: hidden;
+            position: relative;
+            letter-spacing: -0.01em;
+        }
+
+        /* ══════════════════════════════════════════════════════
+           BACKGROUND ORBS (depth)
+           ══════════════════════════════════════════════════════ */
+        .bg-orbs {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+        .bg-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(90px);
+            opacity: 0.5;
+            animation: orbDrift 18s ease-in-out infinite;
+        }
+        .bg-orb:nth-child(1) {
+            width: 55vw;
+            height: 55vw;
+            max-width: 420px;
+            max-height: 420px;
+            background: var(--bg-orb-1);
+            top: -15%;
+            left: -20%;
+            animation-delay: 0s;
+            animation-duration: 20s;
+        }
+        .bg-orb:nth-child(2) {
+            width: 48vw;
+            height: 48vw;
+            max-width: 340px;
+            max-height: 340px;
+            background: var(--bg-orb-2);
+            bottom: -12%;
+            right: -18%;
+            animation-delay: -7s;
+            animation-duration: 22s;
+        }
+        .bg-orb:nth-child(3) {
+            width: 38vw;
+            height: 38vw;
+            max-width: 260px;
+            max-height: 260px;
+            background: var(--bg-orb-3);
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-delay: -13s;
+            animation-duration: 24s;
+            opacity: 0.35;
+        }
+        @keyframes orbDrift {
+            0%,
+            100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(6%, -4%) scale(1.08); }
+            50% { transform: translate(-3%, 5%) scale(0.94); }
+            75% { transform: translate(-5%, -3%) scale(1.05); }
+        }
+
+        /* ══════════════════════════════════════════════════════
+           MAIN CALL SCREEN (relative container)
+           ══════════════════════════════════════════════════════ */
+        .call-screen {
+            position: relative;
+            width: 100%;
+            max-width: 440px;
+            height: 100%;
+            height: 100dvh;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        /* ── Remote Video: full-screen background ── */
+        .remote-video-container {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            background: #000; /* fallback */
+        }
+        #remoteVideo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* ── Local video PiP ── */
+        .local-pip {
+            position: absolute;
+            top: calc(env(safe-area-inset-top, 20px) + 80px);
+            right: 16px;
+            width: 100px;
+            height: 140px;
+            border-radius: 14px;
+            overflow: hidden;
+            z-index: 25;
+            border: 1.5px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            transition: all var(--transition-fast);
+        }
+        #localVideo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transform: scaleX(-1); /* mirror */
+        }
+
+        /* ── Top Bar Overlay ── */
+        .top-bar {
+            position: absolute;
+            top: calc(env(safe-area-inset-top, 20px) + 8px);
+            left: 16px;
+            right: 16px;
+            z-index: 30;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            color: var(--text-2);
+            font-size: 13px;
+        }
+        .top-bar__left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .e2ee-lock {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--e2ee-green);
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+        .e2ee-lock svg {
+            width: 14px;
+            height: 14px;
+            filter: drop-shadow(0 0 4px var(--e2ee-green-glow));
+        }
+        .top-bar__right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .ping-indicator {
+            display: flex;
+            align-items: flex-end;
+            gap: 2px;
+            height: 14px;
+        }
+        .ping-bar {
+            width: 3px;
+            border-radius: 2px;
+            background: var(--e2ee-green);
+            animation: pingBounce 1.2s ease-in-out infinite;
+            opacity: 0.8;
+        }
+        .ping-bar:nth-child(1) { height: 6px; animation-delay: 0s; }
+        .ping-bar:nth-child(2) { height: 10px; animation-delay: 0.15s; }
+        .ping-bar:nth-child(3) { height: 14px; animation-delay: 0.3s; }
+        .ping-bar:nth-child(4) { height: 8px; animation-delay: 0.45s; }
+        @keyframes pingBounce {
+            0%,
+            100% { transform: scaleY(1); opacity: 0.7; }
+            50% { transform: scaleY(0.4); opacity: 1; }
+        }
+        .ping-label {
+            font-size: 10px;
+            color: var(--e2ee-green);
+            font-weight: 500;
+            letter-spacing: 0.03em;
+        }
+        #statusText {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-2);
+            white-space: nowrap;
+        }
+        .theme-toggle {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 1px solid var(--glass-border);
+            background: var(--surface-btn);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            flex-shrink: 0;
+        }
+        .theme-toggle:active { transform: scale(0.9); background: var(--surface-btn-hover); }
+        .theme-toggle svg {
+            width: 13px;
+            height: 13px;
+            stroke: var(--text-2);
+            fill: none;
+            stroke-width: 1.8;
+        }
+
+        /* ── Call duration overlay on video ── */
+        .duration-overlay {
+            position: absolute;
+            bottom: 120px; /* above dock */
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 25;
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 6px 18px;
+            color: var(--text-1);
+            font-size: 14px;
+            font-weight: 500;
+            font-variant-numeric: tabular-nums;
+            font-family: 'SF Mono', 'JetBrains Mono', monospace;
+            pointer-events: none;
+        }
+
+        /* ── Bottom Dock ── */
+        .bottom-dock {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 40;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+            padding: 14px 20px;
+            padding-bottom: calc(env(safe-area-inset-bottom, 8px) + 14px);
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            box-shadow: 0 -8px 30px rgba(0,0,0,0.3);
+        }
+        .action-btn {
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            border: 1px solid var(--glass-border);
+            background: var(--surface-btn);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-bounce);
+            flex-shrink: 0;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        }
+        .action-btn svg {
+            width: 22px;
+            height: 22px;
+            pointer-events: none;
+        }
+        .action-btn svg path,
+        .action-btn svg line { stroke: var(--btn-icon); }
+        .action-btn:active {
+            transform: scale(0.88);
+            background: var(--surface-btn-hover);
+            transition: 100ms cubic-bezier(0.22, 0.61, 0.36, 1);
+        }
+        .action-btn.muted {
+            background: var(--btn-muted-bg);
+            border-color: rgba(255,255,255,0.04);
+        }
+        .action-btn.muted svg path,
+        .action-btn.muted svg line { stroke: #94a3b8; opacity: 0.7; }
+        .action-btn.end-call {
+            width: 68px;
+            height: 68px;
+            background: var(--danger);
+            border: 1px solid rgba(255,255,255,0.12);
+            box-shadow: 0 6px 24px var(--danger-glow), 0 0 0 6px rgba(239,68,68,0.08);
+            animation: endCallPulse 2.8s ease-in-out infinite;
+        }
+        .action-btn.end-call svg { width: 26px; height: 26px; }
+        .action-btn.end-call svg path { stroke: #fff; stroke-width: 2.2; }
+        .action-btn.end-call:active {
+            transform: scale(0.84);
+            background: var(--danger-pressed);
+            box-shadow: 0 2px 10px var(--danger-glow);
+            transition: 90ms cubic-bezier(0.22, 0.61, 0.36, 1);
+        }
+        @keyframes endCallPulse {
+            0%,
+            100% { box-shadow: 0 6px 24px var(--danger-glow), 0 0 0 6px rgba(239,68,68,0.06); }
+            50% { box-shadow: 0 8px 32px var(--danger-glow), 0 0 0 12px rgba(239,68,68,0.02); }
+        }
+
+        /* Ripple effect */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.25);
+            transform: scale(0);
+            animation: rippleOut 0.6s ease-out forwards;
+            pointer-events: none;
+        }
+        @keyframes rippleOut {
+            to { transform: scale(3.5); opacity: 0; }
+        }
+
+        /* Responsive tweaks */
+        @media (min-width: 440px) {
+            .bottom-dock { gap: 24px; padding: 16px 28px; }
+            .action-btn { width: 62px; height: 62px; }
+            .action-btn.end-call { width: 74px; height: 74px; }
+            .local-pip { width: 110px; height: 150px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .bg-orb,
+            .ping-bar,
+            .action-btn.end-call { animation-duration: 0.01ms !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-orbs" aria-hidden="true">
+        <div class="bg-orb"></div>
+        <div class="bg-orb"></div>
+        <div class="bg-orb"></div>
+    </div>
+
+    <main class="call-screen" role="main" aria-label="Secure video call">
+        <!-- Remote video (full screen) -->
+        <div class="remote-video-container">
+            <video id="remoteVideo" autoplay playsinline></video>
+        </div>
+
+        <!-- Local video PiP -->
+        <div class="local-pip">
+            <video id="localVideo" autoplay muted playsinline></video>
+        </div>
+
+        <!-- Top bar -->
+        <header class="top-bar">
+            <div class="top-bar__left">
+                <span class="e2ee-lock" title="End-to-End Encrypted">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="5" y="11" width="14" height="11" rx="2" ry="2"/>
+                        <path d="M12 15v2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+                    </svg>
+                    E2EE
+                </span>
+                <span id="statusText">Initializing...</span>
+            </div>
+            <div class="top-bar__right">
+                <div class="ping-indicator" title="Network 18ms">
+                    <span class="ping-bar"></span><span class="ping-bar"></span><span class="ping-bar"></span><span class="ping-bar"></span>
+                </div>
+                <span class="ping-label">18ms</span>
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                        <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Call duration overlay -->
+        <div class="duration-overlay">
+            <span id="callDuration">00:00</span>
+        </div>
+
+        <!-- Bottom action dock -->
+        <nav class="bottom-dock" aria-label="Call controls">
+            <button class="action-btn" id="btnMute" aria-label="Mute microphone" aria-pressed="false">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                    <line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
+                </svg>
+            </button>
+            <button class="action-btn end-call" id="btnEndCall" aria-label="End call">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6.6,10.5 2.4,6.3 2.4,6.3"/>
+                    <path d="M22.5 16.5c-.8-.8-2-1.3-3.3-1.5-.6-.1-1.2.1-1.6.5l-2.5 2.5c-2.5-.7-4.6-1.9-6.3-3.6s-2.9-3.8-3.6-6.3l2.5-2.5c.4-.4.6-1 .5-1.6-.2-1.3-.7-2.5-1.5-3.3"/>
+                </svg>
+            </button>
+            <button class="action-btn" id="btnVideo" aria-label="Toggle video" aria-pressed="false">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="23 7 16 12 23 17 23 7"/>
+                    <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+                </svg>
+            </button>
+        </nav>
+    </main>
+
+    <!-- Supabase client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+        (function() {
+            // ═══════════════════════════════════════
+            // 1. DOM References
+            // ═══════════════════════════════════════
+            const localVideo = document.getElementById('localVideo');
+            const remoteVideo = document.getElementById('remoteVideo');
+            const btnMute = document.getElementById('btnMute');
+            const btnVideo = document.getElementById('btnVideo');
+            const btnEndCall = document.getElementById('btnEndCall');
+            const callDurationEl = document.getElementById('callDuration');
+            const statusText = document.getElementById('statusText');
+            const themeToggle = document.getElementById('themeToggle');
+            const html = document.documentElement;
+
+            // ═══════════════════════════════════════
+            // 2. Configuration & State
+            // ═══════════════════════════════════════
+            const SUPABASE_URL = 'https://dzcxfiwshcwwqgkdiupl.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6Y3hmaXdzaGN3d3Fna2RpdXBsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwNDc4ODAsImV4cCI6MjA5MzYyMzg4MH0.eHdyeLHcgdQwoL4pYbjFEgTHJLLRjDrxLJgscUCr61U';
+            const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+            const roomId = new URLSearchParams(window.location.search).get('room');
+            if (!roomId) {
+                alert('Missing ?room= parameter in URL');
+                throw new Error('Room ID required');
+            }
+            const userId = crypto.randomUUID();
+            let localStream = null;
+            let peerConnection = null;
+            let isInitiator = false;
+            let callActive = false;
+            let callSeconds = 0;
+            let timerInterval = null;
+            const rtcConfig = {
+                iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+            };
+
+            // ═══════════════════════════════════════
+            // 3. Helper: Status & Timer
+            // ═══════════════════════════════════════
+            function setStatus(text, isError = false) {
+                if (statusText) {
+                    statusText.textContent = text;
+                    statusText.style.color = isError ? 'var(--danger, #ef4444)' : '';
+                }
+            }
+
+            function formatDuration(sec) {
+                const m = Math.floor(sec / 60);
+                const s = sec % 60;
+                return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+            }
+
+            function startTimer() {
+                callSeconds = 0;
+                callDurationEl.textContent = '00:00';
+                timerInterval = setInterval(() => {
+                    callSeconds++;
+                    callDurationEl.textContent = formatDuration(callSeconds);
+                }, 1000);
+                callActive = true;
+            }
+
+            function stopTimer() {
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+                callActive = false;
+            }
+
+            // ═══════════════════════════════════════
+            // 4. Media Handling
+            // ═══════════════════════════════════════
+            async function getLocalStream() {
+                try {
+                    localStream = await navigator.mediaDevices.getUserMedia({
+                        video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' },
+                        audio: true
+                    });
+                    localVideo.srcObject = localStream;
+                    setStatus('Camera ready');
+                    return localStream;
+                } catch (err) {
+                    console.error('Media error:', err);
+                    if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                        setStatus('Camera/mic denied', true);
+                    } else {
+                        setStatus('Media error', true);
+                    }
+                    throw err;
+                }
+            }
+
+            function toggleMute() {
+                if (!localStream) return;
+                const muted = !localStream.getAudioTracks()[0]?.enabled;
+                localStream.getAudioTracks().forEach(t => t.enabled = muted);
+                btnMute.classList.toggle('muted', !muted); // muted=true => enabled=false
+                btnMute.setAttribute('aria-pressed', !muted);
+                btnMute.setAttribute('aria-label', muted ? 'Mute microphone' : 'Unmute microphone');
+            }
+
+            function toggleVideo() {
+                if (!localStream) return;
+                const videoOff = !localStream.getVideoTracks()[0]?.enabled;
+                localStream.getVideoTracks().forEach(t => t.enabled = videoOff);
+                btnVideo.classList.toggle('muted', !videoOff);
+                btnVideo.setAttribute('aria-pressed', !videoOff);
+                btnVideo.setAttribute('aria-label', videoOff ? 'Turn video on' : 'Turn video off');
+            }
+
+            // ═══════════════════════════════════════
+            // 5. WebRTC Peer Connection
+            // ═══════════════════════════════════════
+            function createPeerConnection() {
+                const pc = new RTCPeerConnection(rtcConfig);
+                localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+
+                pc.ontrack = (event) => {
+                    console.log('Remote track received');
+                    remoteVideo.srcObject = event.streams[0];
+                };
+
+                pc.onicecandidate = (event) => {
+                    if (event.candidate) {
+                        supabaseChannel.send({
+                            type: 'broadcast',
+                            event: 'ice-candidate',
+                            payload: { candidate: event.candidate }
+                        });
+                    }
+                };
+
+                pc.onconnectionstatechange = () => {
+                    console.log('Connection state:', pc.connectionState);
+                    switch (pc.connectionState) {
+                        case 'connected':
+                            setStatus('Connected');
+                            if (!callActive) startTimer();
+                            break;
+                        case 'disconnected':
+                        case 'failed':
+                            setStatus('Connection lost', true);
+                            stopTimer();
+                            break;
+                        case 'closed':
+                            setStatus('Call ended');
+                            stopTimer();
+                            break;
+                    }
+                };
+
+                pc.oniceconnectionstatechange = () => {
+                    if (pc.iceConnectionState === 'failed') {
+                        setStatus('Network failure', true);
+                    }
+                };
+                return pc;
+            }
+
+            // ═══════════════════════════════════════
+            // 6. Supabase Realtime Broadcast
+            // ═══════════════════════════════════════
+            const channelName = `room-${roomId}`;
+            const supabaseChannel = supabase.channel(channelName, {
+                config: {
+                    broadcast: { self: true },
+                    presence: { key: userId }
+                }
+            });
+
+            supabaseChannel
+                .on('broadcast', { event: 'offer' }, async (payload) => {
+                    console.log('📩 Offer received');
+                    if (!peerConnection) peerConnection = createPeerConnection();
+                    try {
+                        await peerConnection.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+                        const answer = await peerConnection.createAnswer();
+                        await peerConnection.setLocalDescription(answer);
+                        supabaseChannel.send({
+                            type: 'broadcast',
+                            event: 'answer',
+                            payload: { sdp: peerConnection.localDescription }
+                        });
+                        setStatus('Negotiating…');
+                    } catch (err) {
+                        console.error('Offer handling error:', err);
+                        setStatus('Offer error', true);
+                    }
+                })
+                .on('broadcast', { event: 'answer' }, async (payload) => {
+                    console.log('📩 Answer received');
+                    if (!peerConnection) return;
+                    try {
+                        await peerConnection.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+                        setStatus('Connecting…');
+                    } catch (err) {
+                        console.error('Answer error:', err);
+                        setStatus('Answer error', true);
+                    }
+                })
+                .on('broadcast', { event: 'ice-candidate' }, async (payload) => {
+                    console.log('📩 ICE candidate');
+                    if (!peerConnection) return;
+                    try {
+                        await peerConnection.addIceCandidate(new RTCIceCandidate(payload.candidate));
+                    } catch (err) {
+                        console.error('ICE error:', err);
+                    }
+                })
+                .on('presence', { event: 'sync' }, () => {
+                    const state = supabaseChannel.presenceState();
+                    const peerCount = Object.keys(state).length;
+                    console.log(`👥 Peers in room: ${peerCount}`);
+
+                    if (peerCount === 1) {
+                        isInitiator = false;
+                        setStatus('Waiting for partner…');
+                        if (!peerConnection) peerConnection = createPeerConnection();
+                    } else if (peerCount > 1 && !isInitiator && !peerConnection) {
+                        isInitiator = true;
+                        peerConnection = createPeerConnection();
+                        startCallAsInitiator();
+                    }
+                })
+                .subscribe(async (status) => {
+                    if (status === 'SUBSCRIBED') {
+                        console.log(`✅ Joined room "${roomId}"`);
+                        await supabaseChannel.track({ userId, joinedAt: Date.now() });
+                    }
+                });
+
+            async function startCallAsInitiator() {
+                try {
+                    const offer = await peerConnection.createOffer();
+                    await peerConnection.setLocalDescription(offer);
+                    supabaseChannel.send({
+                        type: 'broadcast',
+                        event: 'offer',
+                        payload: { sdp: peerConnection.localDescription }
+                    });
+                    setStatus('Calling…');
+                } catch (err) {
+                    console.error('Offer creation error:', err);
+                    setStatus('Offer failed', true);
+                }
+            }
+
+            // ═══════════════════════════════════════
+            // 7. End Call & Cleanup
+            // ═══════════════════════════════════════
+            function endCall() {
+                if (peerConnection) {
+                    peerConnection.close();
+                    peerConnection = null;
+                }
+                if (localStream) {
+                    localStream.getTracks().forEach(track => track.stop());
+                    localStream = null;
+                }
+                localVideo.srcObject = null;
+                remoteVideo.srcObject = null;
+                stopTimer();
+                supabaseChannel.untrack();
+                supabaseChannel.unsubscribe();
+                setStatus('Call ended');
+            }
+
+            // ═══════════════════════════════════════
+            // 8. UI: Ripple & Theme
+            // ═══════════════════════════════════════
+            function createRipple(e, btn) {
+                const ripple = document.createElement('span');
+                ripple.classList.add('ripple');
+                const rect = btn.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                ripple.style.width = size + 'px';
+                ripple.style.height = size + 'px';
+                ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+                ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+                btn.appendChild(ripple);
+                ripple.addEventListener('animationend', () => ripple.remove());
+            }
+
+            function toggleTheme() {
+                const current = html.getAttribute('data-theme');
+                const next = current === 'dark' ? 'soft' : 'dark';
+                html.setAttribute('data-theme', next);
+                localStorage.setItem('securecall-theme', next);
+            }
+
+            // ═══════════════════════════════════════
+            // 9. Event Listeners
+            // ═══════════════════════════════════════
+            btnMute.addEventListener('click', (e) => { toggleMute(); createRipple(e, btnMute); });
+            btnVideo.addEventListener('click', (e) => { toggleVideo(); createRipple(e, btnVideo); });
+            btnEndCall.addEventListener('click', (e) => { createRipple(e, btnEndCall); endCall(); });
+            themeToggle.addEventListener('click', toggleTheme);
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'm' || e.key === 'M') toggleMute();
+                if (e.key === 'v' || e.key === 'V') toggleVideo();
+                if (e.key === 'Escape') endCall();
+                if (e.key === 't' || e.key === 'T') toggleTheme();
+            });
+
+            // ═══════════════════════════════════════
+            // 10. Init
+            // ═══════════════════════════════════════
+            (async () => {
+                try {
+                    // Restore theme
+                    const saved = localStorage.getItem('securecall-theme');
+                    if (saved === 'soft' || saved === 'dark') html.setAttribute('data-theme', saved);
+                    await getLocalStream();
+                } catch (err) {
+                    console.error('Init failed:', err);
+                }
+            })();
+
+            window.addEventListener('beforeunload', endCall);
+        })();
+    </script>
+</body>
+</html>
