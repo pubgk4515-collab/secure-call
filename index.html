@@ -791,14 +791,15 @@
                         // Supabase Realtime channel
             let supabaseChannel = null;
 
-            function setupSignaling() {
+                        function setupSignaling() {
                 const channelName = `room-${roomId}`;
                 supabaseChannel = supabase.channel(channelName, {
                     config: {
-                        broadcast: { self: true },
+                        broadcast: { self: false }, // ✅ Ab sirf dusre ki baat sunega
                         presence: { key: userId }
                     }
                 });
+
 
                 supabaseChannel
                     .on('broadcast', { event: 'offer' }, async (msg) => {
