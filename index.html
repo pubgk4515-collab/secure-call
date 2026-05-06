@@ -6,8 +6,7 @@
     <title>SecureCall • E2EE Video</title>
     <style>
         /* ══════════════════════════════════════════════════════
-           🎨 CENTRALIZED CSS VARIABLE SYSTEM
-           Change these to instantly flip mood (dark <-> soft)
+           🎨 CENTRALIZED CSS VARIABLE SYSTEM (Dark/Soft themes)
            ══════════════════════════════════════════════════════ */
         :root {
             --bg-base: #0a0c14;
@@ -19,10 +18,9 @@
             --accent: #4dc9f6;
             --accent-glow: rgba(77, 201, 246, 0.55);
             --accent-soft: rgba(77, 201, 246, 0.18);
-            --accent-ring: rgba(77, 201, 246, 0.5);
-            --glass-bg: rgba(18, 22, 36, 0.55);
+            --glass-bg: rgba(18, 22, 36, 0.65);
             --glass-border: rgba(255, 255, 255, 0.08);
-            --glass-blur: 28px;
+            --glass-blur: 32px;
             --text-1: #f0f3f8;
             --text-2: #a0aec0;
             --text-3: #6b7d95;
@@ -35,14 +33,14 @@
             --danger-pressed: #dc2626;
             --e2ee-green: #22c55e;
             --e2ee-green-glow: rgba(34, 197, 94, 0.5);
-            --status-dot: #22c55e;
             --radius-sm: 14px;
             --radius-md: 22px;
             --radius-lg: 40px;
             --transition-fast: 180ms cubic-bezier(0.22, 0.61, 0.36, 1);
             --transition-bounce: 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+            --status-dot: #22c55e;
+            --speaker-active: #facc15;
         }
-
         [data-theme="soft"] {
             --bg-base: #1a1018;
             --bg-gradient-1: #221820;
@@ -53,8 +51,7 @@
             --accent: #f0a58c;
             --accent-glow: rgba(240, 165, 140, 0.5);
             --accent-soft: rgba(240, 165, 140, 0.15);
-            --accent-ring: rgba(240, 165, 140, 0.45);
-            --glass-bg: rgba(38, 24, 32, 0.55);
+            --glass-bg: rgba(38, 24, 32, 0.65);
             --glass-border: rgba(255, 255, 255, 0.06);
             --text-1: #faf5f2;
             --text-2: #c4b5ad;
@@ -69,11 +66,9 @@
             --e2ee-green: #7ecb8a;
             --e2ee-green-glow: rgba(126, 203, 138, 0.45);
             --status-dot: #f0a58c;
+            --speaker-active: #fbbf24;
         }
 
-        /* ══════════════════════════════════════════════════════
-           RESET & BASE
-           ══════════════════════════════════════════════════════ */
         *,
         *::before,
         *::after {
@@ -93,24 +88,20 @@
             font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
             height: 100%;
             height: 100dvh;
+            background: var(--bg-base);
+            overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: var(--bg-base);
-            overflow: hidden;
-            position: relative;
             letter-spacing: -0.01em;
         }
 
-        /* ══════════════════════════════════════════════════════
-           BACKGROUND ORBS (depth)
-           ══════════════════════════════════════════════════════ */
+        /* Background orbs */
         .bg-orbs {
             position: fixed;
             inset: 0;
             pointer-events: none;
             z-index: 0;
-            overflow: hidden;
         }
         .bg-orb {
             position: absolute;
@@ -120,39 +111,17 @@
             animation: orbDrift 18s ease-in-out infinite;
         }
         .bg-orb:nth-child(1) {
-            width: 55vw;
-            height: 55vw;
-            max-width: 420px;
-            max-height: 420px;
-            background: var(--bg-orb-1);
-            top: -15%;
-            left: -20%;
-            animation-delay: 0s;
-            animation-duration: 20s;
+            width: 55vw; height: 55vw; max-width: 420px; max-height: 420px;
+            background: var(--bg-orb-1); top: -15%; left: -20%; animation-delay: 0s; animation-duration: 20s;
         }
         .bg-orb:nth-child(2) {
-            width: 48vw;
-            height: 48vw;
-            max-width: 340px;
-            max-height: 340px;
-            background: var(--bg-orb-2);
-            bottom: -12%;
-            right: -18%;
-            animation-delay: -7s;
-            animation-duration: 22s;
+            width: 48vw; height: 48vw; max-width: 340px; max-height: 340px;
+            background: var(--bg-orb-2); bottom: -12%; right: -18%; animation-delay: -7s; animation-duration: 22s;
         }
         .bg-orb:nth-child(3) {
-            width: 38vw;
-            height: 38vw;
-            max-width: 260px;
-            max-height: 260px;
-            background: var(--bg-orb-3);
-            top: 40%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            animation-delay: -13s;
-            animation-duration: 24s;
-            opacity: 0.35;
+            width: 38vw; height: 38vw; max-width: 260px; max-height: 260px;
+            background: var(--bg-orb-3); top: 40%; left: 50%; transform: translate(-50%, -50%);
+            animation-delay: -13s; animation-duration: 24s; opacity: 0.35;
         }
         @keyframes orbDrift {
             0%,
@@ -162,25 +131,108 @@
             75% { transform: translate(-5%, -3%) scale(1.05); }
         }
 
-        /* ══════════════════════════════════════════════════════
-           MAIN CALL SCREEN (relative container)
-           ══════════════════════════════════════════════════════ */
-        .call-screen {
+        /* ═══════════════ LOBBY SCREEN ═══════════════ */
+        .lobby-screen {
             position: relative;
+            z-index: 10;
             width: 100%;
-            max-width: 440px;
-            height: 100%;
-            height: 100dvh;
-            z-index: 1;
-            overflow: hidden;
+            max-width: 400px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 32px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+            transition: all 0.3s;
+        }
+        .lobby-screen.hidden { display: none; }
+        .lobby-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-1);
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+        .lobby-subtitle {
+            font-size: 14px;
+            color: var(--text-2);
+            margin-bottom: 28px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .lobby-input {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid var(--glass-border);
+            border-radius: 18px;
+            color: var(--text-1);
+            font-size: 16px;
+            outline: none;
+            backdrop-filter: blur(12px);
+            margin-bottom: 16px;
+            transition: 0.2s;
+        }
+        .lobby-input:focus { border-color: var(--accent); }
+        .lobby-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--accent);
+            border: none;
+            border-radius: 18px;
+            color: #fff;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            box-shadow: 0 4px 20px var(--accent-glow);
+            letter-spacing: 0.3px;
+        }
+        .lobby-btn:active { transform: scale(0.97); opacity: 0.9; }
+        .theme-toggle-lobby {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: 1px solid var(--glass-border);
+            background: var(--surface-btn);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        .theme-toggle-lobby svg {
+            width: 16px;
+            height: 16px;
+            stroke: var(--text-2);
+            fill: none;
+            stroke-width: 1.8;
         }
 
-        /* ── Remote Video: full-screen background ── */
+        /* ═══════════════ CALL SCREEN ═══════════════ */
+        .call-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 20;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .call-screen.active { display: flex; }
         .remote-video-container {
             position: absolute;
             inset: 0;
+            background: #000;
             z-index: 2;
-            background: #000; /* fallback */
         }
         #remoteVideo {
             width: 100%;
@@ -189,7 +241,7 @@
             display: block;
         }
 
-        /* ── Local video PiP ── */
+        /* PiP local video */
         .local-pip {
             position: absolute;
             top: calc(env(safe-area-inset-top, 20px) + 80px);
@@ -203,17 +255,33 @@
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-            transition: all var(--transition-fast);
+            cursor: grab;
+            transition: box-shadow 0.2s;
+            touch-action: none;
         }
+        .local-pip.resizing { cursor: nwse-resize; }
         #localVideo {
             width: 100%;
             height: 100%;
             object-fit: cover;
             display: block;
-            transform: scaleX(-1); /* mirror */
+            transform: scaleX(-1); /* mirror front cam */
+        }
+        .pip-resize-handle {
+            position: absolute;
+            bottom: 4px;
+            right: 4px;
+            width: 20px;
+            height: 20px;
+            background: rgba(255,255,255,0.25);
+            border-radius: 50%;
+            backdrop-filter: blur(6px);
+            cursor: nwse-resize;
+            z-index: 30;
+            pointer-events: auto;
         }
 
-        /* ── Top Bar Overlay ── */
+        /* Top bar */
         .top-bar {
             position: absolute;
             top: calc(env(safe-area-inset-top, 20px) + 8px);
@@ -232,11 +300,6 @@
             color: var(--text-2);
             font-size: 13px;
         }
-        .top-bar__left {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
         .e2ee-lock {
             display: flex;
             align-items: center;
@@ -244,13 +307,8 @@
             color: var(--e2ee-green);
             font-size: 11px;
             font-weight: 600;
-            letter-spacing: 0.02em;
         }
-        .e2ee-lock svg {
-            width: 14px;
-            height: 14px;
-            filter: drop-shadow(0 0 4px var(--e2ee-green-glow));
-        }
+        .e2ee-lock svg { width: 14px; height: 14px; filter: drop-shadow(0 0 4px var(--e2ee-green-glow)); }
         .top-bar__right {
             display: flex;
             align-items: center;
@@ -267,7 +325,6 @@
             border-radius: 2px;
             background: var(--e2ee-green);
             animation: pingBounce 1.2s ease-in-out infinite;
-            opacity: 0.8;
         }
         .ping-bar:nth-child(1) { height: 6px; animation-delay: 0s; }
         .ping-bar:nth-child(2) { height: 10px; animation-delay: 0.15s; }
@@ -278,19 +335,15 @@
             100% { transform: scaleY(1); opacity: 0.7; }
             50% { transform: scaleY(0.4); opacity: 1; }
         }
-        .ping-label {
-            font-size: 10px;
-            color: var(--e2ee-green);
-            font-weight: 500;
-            letter-spacing: 0.03em;
-        }
+        .ping-label { font-size: 10px; color: var(--e2ee-green); font-weight: 500; }
         #statusText {
             font-size: 11px;
             font-weight: 500;
             color: var(--text-2);
             white-space: nowrap;
+            margin-left: 4px;
         }
-        .theme-toggle {
+        .theme-toggle-call {
             width: 28px;
             height: 28px;
             border-radius: 50%;
@@ -304,19 +357,13 @@
             -webkit-backdrop-filter: blur(10px);
             flex-shrink: 0;
         }
-        .theme-toggle:active { transform: scale(0.9); background: var(--surface-btn-hover); }
-        .theme-toggle svg {
-            width: 13px;
-            height: 13px;
-            stroke: var(--text-2);
-            fill: none;
-            stroke-width: 1.8;
-        }
+        .theme-toggle-call:active { transform: scale(0.9); }
+        .theme-toggle-call svg { width: 13px; height: 13px; stroke: var(--text-2); fill: none; stroke-width: 1.8; }
 
-        /* ── Call duration overlay on video ── */
+        /* Timer overlay */
         .duration-overlay {
             position: absolute;
-            bottom: 120px; /* above dock */
+            bottom: 120px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 25;
@@ -334,7 +381,7 @@
             pointer-events: none;
         }
 
-        /* ── Bottom Dock ── */
+        /* Bottom dock */
         .bottom-dock {
             position: absolute;
             bottom: 0;
@@ -344,19 +391,20 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 18px;
-            padding: 14px 20px;
-            padding-bottom: calc(env(safe-area-inset-bottom, 8px) + 14px);
+            gap: 12px;
+            padding: 12px 16px;
+            padding-bottom: calc(env(safe-area-inset-bottom, 12px) + 12px);
             background: var(--glass-bg);
             backdrop-filter: blur(var(--glass-blur));
             -webkit-backdrop-filter: blur(var(--glass-blur));
             border: 1px solid var(--glass-border);
             border-radius: var(--radius-lg) var(--radius-lg) 0 0;
             box-shadow: 0 -8px 30px rgba(0,0,0,0.3);
+            flex-wrap: wrap;
         }
         .action-btn {
-            width: 58px;
-            height: 58px;
+            width: 52px;
+            height: 52px;
             border-radius: 50%;
             border: 1px solid var(--glass-border);
             background: var(--surface-btn);
@@ -369,40 +417,33 @@
             transition: all var(--transition-bounce);
             flex-shrink: 0;
             box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+            position: relative;
         }
-        .action-btn svg {
-            width: 22px;
-            height: 22px;
-            pointer-events: none;
-        }
+        .action-btn svg { width: 20px; height: 20px; pointer-events: none; }
         .action-btn svg path,
-        .action-btn svg line { stroke: var(--btn-icon); }
-        .action-btn:active {
-            transform: scale(0.88);
-            background: var(--surface-btn-hover);
-            transition: 100ms cubic-bezier(0.22, 0.61, 0.36, 1);
-        }
+        .action-btn svg line,
+        .action-btn svg rect,
+        .action-btn svg polyline { stroke: var(--btn-icon); }
+        .action-btn:active { transform: scale(0.88); background: var(--surface-btn-hover); }
         .action-btn.muted {
             background: var(--btn-muted-bg);
             border-color: rgba(255,255,255,0.04);
         }
-        .action-btn.muted svg path,
-        .action-btn.muted svg line { stroke: #94a3b8; opacity: 0.7; }
+        .action-btn.muted svg path { stroke: #94a3b8; }
         .action-btn.end-call {
-            width: 68px;
-            height: 68px;
+            width: 62px;
+            height: 62px;
             background: var(--danger);
             border: 1px solid rgba(255,255,255,0.12);
             box-shadow: 0 6px 24px var(--danger-glow), 0 0 0 6px rgba(239,68,68,0.08);
             animation: endCallPulse 2.8s ease-in-out infinite;
         }
-        .action-btn.end-call svg { width: 26px; height: 26px; }
+        .action-btn.end-call svg { width: 24px; height: 24px; }
         .action-btn.end-call svg path { stroke: #fff; stroke-width: 2.2; }
         .action-btn.end-call:active {
             transform: scale(0.84);
             background: var(--danger-pressed);
             box-shadow: 0 2px 10px var(--danger-glow);
-            transition: 90ms cubic-bezier(0.22, 0.61, 0.36, 1);
         }
         @keyframes endCallPulse {
             0%,
@@ -410,59 +451,101 @@
             50% { box-shadow: 0 8px 32px var(--danger-glow), 0 0 0 12px rgba(239,68,68,0.02); }
         }
 
-        /* Ripple effect */
-        .ripple {
-            position: absolute;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.25);
-            transform: scale(0);
-            animation: rippleOut 0.6s ease-out forwards;
-            pointer-events: none;
-        }
-        @keyframes rippleOut {
-            to { transform: scale(3.5); opacity: 0; }
-        }
+        .speaker-active .speaker-icon { stroke: var(--speaker-active); }
 
-        /* Responsive tweaks */
-        @media (min-width: 440px) {
-            .bottom-dock { gap: 24px; padding: 16px 28px; }
-            .action-btn { width: 62px; height: 62px; }
-            .action-btn.end-call { width: 74px; height: 74px; }
-            .local-pip { width: 110px; height: 150px; }
+        /* Post-call overlay */
+        .post-call-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 60;
+            background: var(--glass-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s;
         }
-        @media (prefers-reduced-motion: reduce) {
-            .bg-orb,
-            .ping-bar,
-            .action-btn.end-call { animation-duration: 0.01ms !important; }
+        .post-call-overlay.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .post-call-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--text-1);
+        }
+        .post-call-duration {
+            font-size: 32px;
+            font-weight: 500;
+            color: var(--accent);
+            font-family: 'SF Mono', monospace;
+        }
+        .return-lobby-btn {
+            padding: 12px 32px;
+            background: var(--accent);
+            border: none;
+            border-radius: 20px;
+            color: #fff;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 4px 20px var(--accent-glow);
+            transition: transform 0.2s;
+        }
+        .return-lobby-btn:active { transform: scale(0.95); }
+
+        /* Responsive */
+        @media (min-width: 440px) {
+            .bottom-dock { gap: 16px; padding: 14px 24px; }
+            .action-btn { width: 56px; height: 56px; }
+            .action-btn.end-call { width: 68px; height: 68px; }
         }
     </style>
 </head>
 <body>
+    <!-- Background orbs -->
     <div class="bg-orbs" aria-hidden="true">
-        <div class="bg-orb"></div>
-        <div class="bg-orb"></div>
-        <div class="bg-orb"></div>
+        <div class="bg-orb"></div><div class="bg-orb"></div><div class="bg-orb"></div>
     </div>
 
-    <main class="call-screen" role="main" aria-label="Secure video call">
-        <!-- Remote video (full screen) -->
+    <!-- ═══════════ LOBBY SCREEN ═══════════ -->
+    <div id="lobbyScreen" class="lobby-screen">
+        <button class="theme-toggle-lobby" id="themeToggleLobby" aria-label="Theme">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+        </button>
+        <h1 class="lobby-title">🔒 SecureCall</h1>
+        <p class="lobby-subtitle">End-to-End Encrypted Video</p>
+        <input type="text" id="roomInput" class="lobby-input" placeholder="Enter Room ID" autocomplete="off" maxlength="30">
+        <button id="joinBtn" class="lobby-btn">Join / Create Room</button>
+    </div>
+
+    <!-- ═══════════ CALL SCREEN ═══════════ -->
+    <div id="callScreen" class="call-screen">
         <div class="remote-video-container">
             <video id="remoteVideo" autoplay playsinline></video>
         </div>
 
-        <!-- Local video PiP -->
-        <div class="local-pip">
+        <!-- PiP local video -->
+        <div class="local-pip" id="localPip">
             <video id="localVideo" autoplay muted playsinline></video>
+            <div class="pip-resize-handle" id="pipResizeHandle"></div>
         </div>
 
         <!-- Top bar -->
         <header class="top-bar">
-            <div class="top-bar__left">
-                <span class="e2ee-lock" title="End-to-End Encrypted">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="5" y="11" width="14" height="11" rx="2" ry="2"/>
-                        <path d="M12 15v2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>
-                    </svg>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span class="e2ee-lock">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="5" y="11" width="14" height="11" rx="2"/><path d="M12 15v2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
                     E2EE
                 </span>
                 <span id="statusText">Initializing...</span>
@@ -472,45 +555,42 @@
                     <span class="ping-bar"></span><span class="ping-bar"></span><span class="ping-bar"></span><span class="ping-bar"></span>
                 </div>
                 <span class="ping-label">18ms</span>
-                <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
-                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-                        <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
-                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-                    </svg>
+                <button class="theme-toggle-call" id="themeToggleCall" aria-label="Theme">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
                 </button>
             </div>
         </header>
 
-        <!-- Call duration overlay -->
         <div class="duration-overlay">
             <span id="callDuration">00:00</span>
         </div>
 
-        <!-- Bottom action dock -->
-        <nav class="bottom-dock" aria-label="Call controls">
-            <button class="action-btn" id="btnMute" aria-label="Mute microphone" aria-pressed="false">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                    <line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
-                </svg>
+        <!-- Bottom dock -->
+        <nav class="bottom-dock">
+            <button class="action-btn" id="btnMute" aria-label="Mute">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+            </button>
+            <button class="action-btn" id="btnVideo" aria-label="Video">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+            </button>
+            <button class="action-btn" id="btnFlipCamera" aria-label="Flip camera">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+            </button>
+            <button class="action-btn" id="btnSpeaker" aria-label="Speaker">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
             </button>
             <button class="action-btn end-call" id="btnEndCall" aria-label="End call">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="6.6,10.5 2.4,6.3 2.4,6.3"/>
-                    <path d="M22.5 16.5c-.8-.8-2-1.3-3.3-1.5-.6-.1-1.2.1-1.6.5l-2.5 2.5c-2.5-.7-4.6-1.9-6.3-3.6s-2.9-3.8-3.6-6.3l2.5-2.5c.4-.4.6-1 .5-1.6-.2-1.3-.7-2.5-1.5-3.3"/>
-                </svg>
-            </button>
-            <button class="action-btn" id="btnVideo" aria-label="Toggle video" aria-pressed="false">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polygon points="23 7 16 12 23 17 23 7"/>
-                    <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
-                </svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6.6,10.5 2.4,6.3 2.4,6.3"/><path d="M22.5 16.5c-.8-.8-2-1.3-3.3-1.5-.6-.1-1.2.1-1.6.5l-2.5 2.5c-2.5-.7-4.6-1.9-6.3-3.6s-2.9-3.8-3.6-6.3l2.5-2.5c.4-.4.6-1 .5-1.6-.2-1.3-.7-2.5-1.5-3.3"/></svg>
             </button>
         </nav>
-    </main>
+
+        <!-- Post-call overlay -->
+        <div class="post-call-overlay" id="postCallOverlay">
+            <p class="post-call-title">Call Ended</p>
+            <p class="post-call-duration" id="postCallDuration">00:00</p>
+            <button class="return-lobby-btn" id="returnToLobbyBtn">Return to Lobby</button>
+        </div>
+    </div>
 
     <!-- Supabase client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -518,43 +598,57 @@
     <script>
         (function() {
             // ═══════════════════════════════════════
-            // 1. DOM References
+            // DOM Elements
             // ═══════════════════════════════════════
+            const lobbyScreen = document.getElementById('lobbyScreen');
+            const callScreen = document.getElementById('callScreen');
+            const roomInput = document.getElementById('roomInput');
+            const joinBtn = document.getElementById('joinBtn');
             const localVideo = document.getElementById('localVideo');
             const remoteVideo = document.getElementById('remoteVideo');
-            const btnMute = document.getElementById('btnMute');
-            const btnVideo = document.getElementById('btnVideo');
-            const btnEndCall = document.getElementById('btnEndCall');
+            const localPip = document.getElementById('localPip');
+            const pipResizeHandle = document.getElementById('pipResizeHandle');
             const callDurationEl = document.getElementById('callDuration');
             const statusText = document.getElementById('statusText');
-            const themeToggle = document.getElementById('themeToggle');
+            const postCallOverlay = document.getElementById('postCallOverlay');
+            const postCallDuration = document.getElementById('postCallDuration');
+            const returnToLobbyBtn = document.getElementById('returnToLobbyBtn');
+            const btnMute = document.getElementById('btnMute');
+            const btnVideo = document.getElementById('btnVideo');
+            const btnFlipCamera = document.getElementById('btnFlipCamera');
+            const btnSpeaker = document.getElementById('btnSpeaker');
+            const btnEndCall = document.getElementById('btnEndCall');
+            const themeToggleLobby = document.getElementById('themeToggleLobby');
+            const themeToggleCall = document.getElementById('themeToggleCall');
             const html = document.documentElement;
 
             // ═══════════════════════════════════════
-            // 2. Configuration & State
+            // Configuration & State
             // ═══════════════════════════════════════
             const SUPABASE_URL = 'https://dzcxfiwshcwwqgkdiupl.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6Y3hmaXdzaGN3d3Fna2RpdXBsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwNDc4ODAsImV4cCI6MjA5MzYyMzg4MH0.eHdyeLHcgdQwoL4pYbjFEgTHJLLRjDrxLJgscUCr61U';
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6Y3hmaXdzaGN3d3Fna2RpdXBsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwNDc4ODAsImV4cCI6MjA5MzYyMzg4MH0.eHdyeLHcgdQwoL4pYbjFEgTHJLLRjDrxLJgscUCr61U';
             const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-            const roomId = new URLSearchParams(window.location.search).get('room');
-            if (!roomId) {
-                alert('Missing ?room= parameter in URL');
-                throw new Error('Room ID required');
-            }
-            const userId = crypto.randomUUID();
+            let userId = crypto.randomUUID();
+            let roomId = null;
             let localStream = null;
             let peerConnection = null;
-            let isInitiator = false;
+            let isPolitePeer = false;            // polite peer waits, impolite offers first
             let callActive = false;
             let callSeconds = 0;
             let timerInterval = null;
+            let isMuted = false;
+            let isVideoOff = false;
+            let speakerOn = false;                // UI only, no hardware control
+            let currentFacingMode = 'user';      // 'user' (front) or 'environment' (back)
+            let iceCandidateBuffer = [];
+
             const rtcConfig = {
                 iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
             };
 
             // ═══════════════════════════════════════
-            // 3. Helper: Status & Timer
+            // Helper functions
             // ═══════════════════════════════════════
             function setStatus(text, isError = false) {
                 if (statusText) {
@@ -564,9 +658,9 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
             }
 
             function formatDuration(sec) {
-                const m = Math.floor(sec / 60);
-                const s = sec % 60;
-                return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+                const m = Math.floor(sec / 60).toString().padStart(2, '0');
+                const s = (sec % 60).toString().padStart(2, '0');
+                return `${m}:${s}`;
             }
 
             function startTimer() {
@@ -580,20 +674,25 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
             }
 
             function stopTimer() {
-                if (timerInterval) {
-                    clearInterval(timerInterval);
-                    timerInterval = null;
-                }
+                if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
                 callActive = false;
             }
 
+            // Theme toggle
+            function toggleTheme() {
+                const current = html.getAttribute('data-theme');
+                const next = current === 'dark' ? 'soft' : 'dark';
+                html.setAttribute('data-theme', next);
+                localStorage.setItem('securecall-theme', next);
+            }
+
             // ═══════════════════════════════════════
-            // 4. Media Handling
+            // Media & Camera
             // ═══════════════════════════════════════
-            async function getLocalStream() {
+            async function getLocalStream(facingMode = 'user') {
                 try {
                     localStream = await navigator.mediaDevices.getUserMedia({
-                        video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' },
+                        video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode },
                         audio: true
                     });
                     localVideo.srcObject = localStream;
@@ -604,32 +703,45 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
                     if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
                         setStatus('Camera/mic denied', true);
                     } else {
-                        setStatus('Media error', true);
+                        setStatus('Could not access media', true);
                     }
                     throw err;
                 }
             }
 
-            function toggleMute() {
+            async function flipCamera() {
                 if (!localStream) return;
-                const muted = !localStream.getAudioTracks()[0]?.enabled;
-                localStream.getAudioTracks().forEach(t => t.enabled = muted);
-                btnMute.classList.toggle('muted', !muted); // muted=true => enabled=false
-                btnMute.setAttribute('aria-pressed', !muted);
-                btnMute.setAttribute('aria-label', muted ? 'Mute microphone' : 'Unmute microphone');
-            }
-
-            function toggleVideo() {
-                if (!localStream) return;
-                const videoOff = !localStream.getVideoTracks()[0]?.enabled;
-                localStream.getVideoTracks().forEach(t => t.enabled = videoOff);
-                btnVideo.classList.toggle('muted', !videoOff);
-                btnVideo.setAttribute('aria-pressed', !videoOff);
-                btnVideo.setAttribute('aria-label', videoOff ? 'Turn video on' : 'Turn video off');
+                const newMode = currentFacingMode === 'user' ? 'environment' : 'user';
+                try {
+                    // Stop old video track
+                    localStream.getVideoTracks().forEach(track => track.stop());
+                    // Get new stream with new facing mode
+                    const newStream = await navigator.mediaDevices.getUserMedia({
+                        video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: newMode },
+                        audio: false
+                    });
+                    const newVideoTrack = newStream.getVideoTracks()[0];
+                    // Replace track in existing localStream
+                    const oldVideoTrack = localStream.getVideoTracks()[0];
+                    if (oldVideoTrack) localStream.removeTrack(oldVideoTrack);
+                    localStream.addTrack(newVideoTrack);
+                    localVideo.srcObject = localStream;
+                    // Replace sender track in peer connection
+                    if (peerConnection) {
+                        const sender = peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+                        if (sender) await sender.replaceTrack(newVideoTrack);
+                    }
+                    currentFacingMode = newMode;
+                    // Mirror front cam only
+                    localVideo.style.transform = newMode === 'user' ? 'scaleX(-1)' : 'scaleX(1)';
+                } catch (err) {
+                    console.error('Flip camera error:', err);
+                    setStatus('Camera switch failed', true);
+                }
             }
 
             // ═══════════════════════════════════════
-            // 5. WebRTC Peer Connection
+            // WebRTC & Signaling
             // ═══════════════════════════════════════
             function createPeerConnection() {
                 const pc = new RTCPeerConnection(rtcConfig);
@@ -670,86 +782,102 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
                 };
 
                 pc.oniceconnectionstatechange = () => {
-                    if (pc.iceConnectionState === 'failed') {
-                        setStatus('Network failure', true);
-                    }
+                    if (pc.iceConnectionState === 'failed') setStatus('Network failure', true);
                 };
+
                 return pc;
             }
 
-            // ═══════════════════════════════════════
-            // 6. Supabase Realtime Broadcast
-            // ═══════════════════════════════════════
-            const channelName = `room-${roomId}`;
-            const supabaseChannel = supabase.channel(channelName, {
-                config: {
-                    broadcast: { self: true },
-                    presence: { key: userId }
-                }
-            });
+            // Supabase Realtime channel
+            let supabaseChannel = null;
 
-            supabaseChannel
-                .on('broadcast', { event: 'offer' }, async (payload) => {
-                    console.log('📩 Offer received');
-                    if (!peerConnection) peerConnection = createPeerConnection();
-                    try {
-                        await peerConnection.setRemoteDescription(new RTCSessionDescription(payload.sdp));
-                        const answer = await peerConnection.createAnswer();
-                        await peerConnection.setLocalDescription(answer);
-                        supabaseChannel.send({
-                            type: 'broadcast',
-                            event: 'answer',
-                            payload: { sdp: peerConnection.localDescription }
-                        });
-                        setStatus('Negotiating…');
-                    } catch (err) {
-                        console.error('Offer handling error:', err);
-                        setStatus('Offer error', true);
-                    }
-                })
-                .on('broadcast', { event: 'answer' }, async (payload) => {
-                    console.log('📩 Answer received');
-                    if (!peerConnection) return;
-                    try {
-                        await peerConnection.setRemoteDescription(new RTCSessionDescription(payload.sdp));
-                        setStatus('Connecting…');
-                    } catch (err) {
-                        console.error('Answer error:', err);
-                        setStatus('Answer error', true);
-                    }
-                })
-                .on('broadcast', { event: 'ice-candidate' }, async (payload) => {
-                    console.log('📩 ICE candidate');
-                    if (!peerConnection) return;
-                    try {
-                        await peerConnection.addIceCandidate(new RTCIceCandidate(payload.candidate));
-                    } catch (err) {
-                        console.error('ICE error:', err);
-                    }
-                })
-                .on('presence', { event: 'sync' }, () => {
-                    const state = supabaseChannel.presenceState();
-                    const peerCount = Object.keys(state).length;
-                    console.log(`👥 Peers in room: ${peerCount}`);
-
-                    if (peerCount === 1) {
-                        isInitiator = false;
-                        setStatus('Waiting for partner…');
-                        if (!peerConnection) peerConnection = createPeerConnection();
-                    } else if (peerCount > 1 && !isInitiator && !peerConnection) {
-                        isInitiator = true;
-                        peerConnection = createPeerConnection();
-                        startCallAsInitiator();
-                    }
-                })
-                .subscribe(async (status) => {
-                    if (status === 'SUBSCRIBED') {
-                        console.log(`✅ Joined room "${roomId}"`);
-                        await supabaseChannel.track({ userId, joinedAt: Date.now() });
+            function setupSignaling() {
+                const channelName = `room-${roomId}`;
+                supabaseChannel = supabase.channel(channelName, {
+                    config: {
+                        broadcast: { self: true },
+                        presence: { key: userId }
                     }
                 });
 
-            async function startCallAsInitiator() {
+                supabaseChannel
+                    .on('broadcast', { event: 'offer' }, async (payload) => {
+                        console.log('📩 Offer received, polite:', isPolitePeer);
+                        if (!peerConnection) peerConnection = createPeerConnection();
+                        try {
+                            await peerConnection.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+                            // Process buffered ICE candidates
+                            while (iceCandidateBuffer.length) {
+                                const candidate = iceCandidateBuffer.shift();
+                                await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+                            }
+                            if (isPolitePeer) {
+                                const answer = await peerConnection.createAnswer();
+                                await peerConnection.setLocalDescription(answer);
+                                supabaseChannel.send({
+                                    type: 'broadcast',
+                                    event: 'answer',
+                                    payload: { sdp: peerConnection.localDescription }
+                                });
+                            }
+                            setStatus('Negotiating…');
+                        } catch (err) {
+                            console.error('Offer handling error:', err);
+                            setStatus('Offer error', true);
+                        }
+                    })
+                    .on('broadcast', { event: 'answer' }, async (payload) => {
+                        console.log('📩 Answer received');
+                        if (!peerConnection) return;
+                        try {
+                            await peerConnection.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+                            while (iceCandidateBuffer.length) {
+                                const candidate = iceCandidateBuffer.shift();
+                                await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+                            }
+                            setStatus('Connecting…');
+                        } catch (err) {
+                            console.error('Answer error:', err);
+                            setStatus('Answer error', true);
+                        }
+                    })
+                    .on('broadcast', { event: 'ice-candidate' }, (payload) => {
+                        if (!peerConnection || !peerConnection.remoteDescription) {
+                            iceCandidateBuffer.push(payload.candidate);
+                        } else {
+                            peerConnection.addIceCandidate(new RTCIceCandidate(payload.candidate)).catch(console.error);
+                        }
+                    })
+                    .on('presence', { event: 'sync' }, () => {
+                        const state = supabaseChannel.presenceState();
+                        const peerIds = Object.keys(state);
+                        if (peerIds.length === 1) {
+                            // Alone
+                            setStatus('Waiting for partner…');
+                            if (!peerConnection) peerConnection = createPeerConnection();
+                        } else if (peerIds.length === 2) {
+                            // Determine polite/impolite based on userId comparison
+                            const otherId = peerIds.find(id => id !== userId);
+                            if (otherId) {
+                                isPolitePeer = userId < otherId;  // smaller ID is polite
+                                console.log(`Polite: ${isPolitePeer}`);
+                                if (!isPolitePeer) {
+                                    // Impolite peer initiates call
+                                    if (!peerConnection) peerConnection = createPeerConnection();
+                                    initiateCall();
+                                }
+                            }
+                        }
+                    })
+                    .subscribe(async (status) => {
+                        if (status === 'SUBSCRIBED') {
+                            console.log(`✅ Joined room "${roomId}"`);
+                            await supabaseChannel.track({ userId });
+                        }
+                    });
+            }
+
+            async function initiateCall() {
                 try {
                     const offer = await peerConnection.createOffer();
                     await peerConnection.setLocalDescription(offer);
@@ -765,9 +893,6 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
                 }
             }
 
-            // ═══════════════════════════════════════
-            // 7. End Call & Cleanup
-            // ═══════════════════════════════════════
             function endCall() {
                 if (peerConnection) {
                     peerConnection.close();
@@ -780,64 +905,155 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
                 localVideo.srcObject = null;
                 remoteVideo.srcObject = null;
                 stopTimer();
-                supabaseChannel.untrack();
-                supabaseChannel.unsubscribe();
+                if (supabaseChannel) {
+                    supabaseChannel.untrack();
+                    supabaseChannel.unsubscribe();
+                }
+                // Show post-call overlay
+                postCallDuration.textContent = formatDuration(callSeconds);
+                postCallOverlay.classList.add('visible');
                 setStatus('Call ended');
             }
 
-            // ═══════════════════════════════════════
-            // 8. UI: Ripple & Theme
-            // ═══════════════════════════════════════
-            function createRipple(e, btn) {
-                const ripple = document.createElement('span');
-                ripple.classList.add('ripple');
-                const rect = btn.getBoundingClientRect();
-                const size = Math.max(rect.width, rect.height);
-                ripple.style.width = size + 'px';
-                ripple.style.height = size + 'px';
-                ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
-                ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
-                btn.appendChild(ripple);
-                ripple.addEventListener('animationend', () => ripple.remove());
-            }
-
-            function toggleTheme() {
-                const current = html.getAttribute('data-theme');
-                const next = current === 'dark' ? 'soft' : 'dark';
-                html.setAttribute('data-theme', next);
-                localStorage.setItem('securecall-theme', next);
+            function returnToLobby() {
+                postCallOverlay.classList.remove('visible');
+                callScreen.classList.remove('active');
+                lobbyScreen.classList.remove('hidden');
+                roomInput.value = '';
+                // Reset state for fresh call
+                iceCandidateBuffer = [];
+                currentFacingMode = 'user';
+                localVideo.style.transform = 'scaleX(-1)';
             }
 
             // ═══════════════════════════════════════
-            // 9. Event Listeners
+            // Draggable & Resizable PiP
             // ═══════════════════════════════════════
-            btnMute.addEventListener('click', (e) => { toggleMute(); createRipple(e, btnMute); });
-            btnVideo.addEventListener('click', (e) => { toggleVideo(); createRipple(e, btnVideo); });
-            btnEndCall.addEventListener('click', (e) => { createRipple(e, btnEndCall); endCall(); });
-            themeToggle.addEventListener('click', toggleTheme);
+            let isDragging = false, dragStartX, dragStartY, initialLeft, initialTop;
+            let isResizing = false, resizeStartX, resizeStartY, initialWidth, initialHeight;
 
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'm' || e.key === 'M') toggleMute();
-                if (e.key === 'v' || e.key === 'V') toggleVideo();
-                if (e.key === 'Escape') endCall();
-                if (e.key === 't' || e.key === 'T') toggleTheme();
+            function startDrag(e) {
+                if (e.target === pipResizeHandle) return;
+                isDragging = true;
+                const touch = e.touches ? e.touches[0] : e;
+                dragStartX = touch.clientX;
+                dragStartY = touch.clientY;
+                const rect = localPip.getBoundingClientRect();
+                initialLeft = rect.left;
+                initialTop = rect.top;
+                localPip.style.cursor = 'grabbing';
+                e.preventDefault();
+            }
+
+            function onDrag(e) {
+                if (!isDragging) return;
+                const touch = e.touches ? e.touches[0] : e;
+                const dx = touch.clientX - dragStartX;
+                const dy = touch.clientY - dragStartY;
+                localPip.style.left = initialLeft + dx + 'px';
+                localPip.style.top = initialTop + dy + 'px';
+            }
+
+            function stopDrag() {
+                isDragging = false;
+                localPip.style.cursor = 'grab';
+            }
+
+            function startResize(e) {
+                isResizing = true;
+                const touch = e.touches ? e.touches[0] : e;
+                resizeStartX = touch.clientX;
+                resizeStartY = touch.clientY;
+                initialWidth = localPip.offsetWidth;
+                initialHeight = localPip.offsetHeight;
+                e.stopPropagation();
+                e.preventDefault();
+            }
+
+            function onResize(e) {
+                if (!isResizing) return;
+                const touch = e.touches ? e.touches[0] : e;
+                const dx = touch.clientX - resizeStartX;
+                const dy = touch.clientY - resizeStartY;
+                const newWidth = Math.max(80, initialWidth + dx);
+                const newHeight = Math.max(100, initialHeight + dy);
+                localPip.style.width = newWidth + 'px';
+                localPip.style.height = newHeight + 'px';
+            }
+
+            function stopResize() { isResizing = false; }
+
+            localPip.addEventListener('mousedown', startDrag);
+            localPip.addEventListener('touchstart', startDrag, { passive: false });
+            window.addEventListener('mousemove', (e) => { onDrag(e); onResize(e); });
+            window.addEventListener('touchmove', (e) => { onDrag(e); onResize(e); }, { passive: false });
+            window.addEventListener('mouseup', () => { stopDrag(); stopResize(); });
+            window.addEventListener('touchend', () => { stopDrag(); stopResize(); });
+            pipResizeHandle.addEventListener('mousedown', startResize);
+            pipResizeHandle.addEventListener('touchstart', startResize, { passive: false });
+
+            // ═══════════════════════════════════════
+            // Button Handlers
+            // ═══════════════════════════════════════
+            btnMute.addEventListener('click', () => {
+                if (!localStream) return;
+                isMuted = !isMuted;
+                localStream.getAudioTracks().forEach(track => track.enabled = !isMuted);
+                btnMute.classList.toggle('muted', isMuted);
             });
 
-            // ═══════════════════════════════════════
-            // 10. Init
-            // ═══════════════════════════════════════
-            (async () => {
-                try {
-                    // Restore theme
-                    const saved = localStorage.getItem('securecall-theme');
-                    if (saved === 'soft' || saved === 'dark') html.setAttribute('data-theme', saved);
-                    await getLocalStream();
-                } catch (err) {
-                    console.error('Init failed:', err);
-                }
-            })();
+            btnVideo.addEventListener('click', () => {
+                if (!localStream) return;
+                isVideoOff = !isVideoOff;
+                localStream.getVideoTracks().forEach(track => track.enabled = !isVideoOff);
+                btnVideo.classList.toggle('muted', isVideoOff);
+            });
 
-            window.addEventListener('beforeunload', endCall);
+            btnFlipCamera.addEventListener('click', flipCamera);
+
+            btnSpeaker.addEventListener('click', () => {
+                speakerOn = !speakerOn;
+                btnSpeaker.classList.toggle('speaker-active', speakerOn);
+                // Actual hardware speaker switching is not possible in most browsers.
+                // This is a UI-only toggle.
+                console.log(`Speaker ${speakerOn ? 'ON' : 'OFF'} (UI only)`);
+            });
+
+            btnEndCall.addEventListener('click', endCall);
+            returnToLobbyBtn.addEventListener('click', returnToLobby);
+
+            // Theme toggles
+            themeToggleLobby.addEventListener('click', toggleTheme);
+            themeToggleCall.addEventListener('click', toggleTheme);
+
+            // ═══════════════════════════════════════
+            // Lobby Join
+            // ═══════════════════════════════════════
+            joinBtn.addEventListener('click', async () => {
+                roomId = roomInput.value.trim();
+                if (!roomId) return alert('Please enter a Room ID');
+                lobbyScreen.classList.add('hidden');
+                callScreen.classList.add('active');
+                setStatus('Initializing…');
+                try {
+                    await getLocalStream('user');
+                    setupSignaling();
+                } catch (err) {
+                    console.error(err);
+                    setStatus('Failed to start media', true);
+                }
+            });
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && callScreen.classList.contains('active')) endCall();
+            });
+
+            // Initial theme load
+            const savedTheme = localStorage.getItem('securecall-theme');
+            if (savedTheme === 'soft' || savedTheme === 'dark') html.setAttribute('data-theme', savedTheme);
+
+            console.log('%c🔒 SecureCall E2EE %cReady', 'color: #22c55e; font-weight: bold;', 'color: inherit;');
         })();
     </script>
 </body>
