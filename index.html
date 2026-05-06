@@ -788,7 +788,7 @@
                 return pc;
             }
 
-            // Supabase Realtime channel
+                        // Supabase Realtime channel
             let supabaseChannel = null;
 
             function setupSignaling() {
@@ -801,12 +801,13 @@
                 });
 
                 supabaseChannel
-                    .on('broadcast', { event: 'offer' }, async (payload) => {
+                    .on('broadcast', { event: 'offer' }, async (msg) => {
                         console.log('📩 Offer received, polite:', isPolitePeer);
                         if (!peerConnection) peerConnection = createPeerConnection();
                         try {
-                            await peerConnection.setRemoteDescription(new RTCSessionDescription(payload.sdp));
-                            // Process buffered ICE candidates
+                            // FIX: msg.payload.sdp use kiya gaya hai
+                            await peerConnection.setRemoteDescription(new RTCSessionDescription(msg.payload.sdp));
+                            
                             while (iceCandidateBuffer.length) {
                                 const candidate = iceCandidateBuffer.shift();
                                 await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
@@ -822,17 +823,17 @@
                             }
                             setStatus('Negotiating…');
                         } catch (err) {
-                         console.error('Offer handling error:', err);
-                        // Ye line hume screen par hi exact reason bata degi
-                           setStatus('Err: ' + err.message, true); 
-                    }
-
+                            console.error('Offer handling error:', err);
+                            setStatus('Err: ' + err.message, true);
+                        }
                     })
-                    .on('broadcast', { event: 'answer' }, async (payload) => {
+                    .on('broadcast', { event: 'answer' }, async (msg) => {
                         console.log('📩 Answer received');
                         if (!peerConnection) return;
                         try {
-                            await peerConnection.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+                            // FIX: msg.payload.sdp use kiya gaya hai
+                            await peerConnection.setRemoteDescription(new RTCSessionDescription(msg.payload.sdp));
+                            
                             while (iceCandidateBuffer.length) {
                                 const candidate = iceCandidateBuffer.shift();
                                 await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
@@ -840,31 +841,29 @@
                             setStatus('Connecting…');
                         } catch (err) {
                             console.error('Answer error:', err);
-                            setStatus('Answer error', true);
+                            setStatus('Err: ' + err.message, true);
                         }
                     })
-                    .on('broadcast', { event: 'ice-candidate' }, (payload) => {
+                    .on('broadcast', { event: 'ice-candidate' }, (msg) => {
+                        // FIX: msg.payload.candidate use kiya gaya hai
                         if (!peerConnection || !peerConnection.remoteDescription) {
-                            iceCandidateBuffer.push(payload.candidate);
+                            iceCandidateBuffer.push(msg.payload.candidate);
                         } else {
-                            peerConnection.addIceCandidate(new RTCIceCandidate(payload.candidate)).catch(console.error);
+                            peerConnection.addIceCandidate(new RTCIceCandidate(msg.payload.candidate)).catch(console.error);
                         }
                     })
                     .on('presence', { event: 'sync' }, () => {
                         const state = supabaseChannel.presenceState();
                         const peerIds = Object.keys(state);
                         if (peerIds.length === 1) {
-                            // Alone
                             setStatus('Waiting for partner…');
                             if (!peerConnection) peerConnection = createPeerConnection();
                         } else if (peerIds.length === 2) {
-                            // Determine polite/impolite based on userId comparison
                             const otherId = peerIds.find(id => id !== userId);
                             if (otherId) {
-                                isPolitePeer = userId < otherId;  // smaller ID is polite
+                                isPolitePeer = userId < otherId; 
                                 console.log(`Polite: ${isPolitePeer}`);
                                 if (!isPolitePeer) {
-                                    // Impolite peer initiates call
                                     if (!peerConnection) peerConnection = createPeerConnection();
                                     initiateCall();
                                 }
@@ -878,6 +877,7 @@
                         }
                     });
             }
+
 
             async function initiateCall() {
                 try {
