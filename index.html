@@ -822,9 +822,11 @@
                             }
                             setStatus('Negotiating…');
                         } catch (err) {
-                            console.error('Offer handling error:', err);
-                            setStatus('Offer error', true);
-                        }
+                         console.error('Offer handling error:', err);
+                        // Ye line hume screen par hi exact reason bata degi
+                           setStatus('Err: ' + err.message, true); 
+                    }
+
                     })
                     .on('broadcast', { event: 'answer' }, async (payload) => {
                         console.log('📩 Answer received');
